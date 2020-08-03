@@ -1,0 +1,33 @@
+{
+  "logs": [
+    {
+      "message": "New monitor workstation 004",
+      "attention": true,
+      "tech": "John Doe",
+      "date": "2020-07-27T16:46:03.093Z",
+      "id": 1
+    }
+  ],
+  "techs": [
+    {
+      "id": 1,
+      "firstName": "John",
+      "lastName": "Doe"
+    },
+    {
+      "id": 2,
+      "firstName": "Sam",
+      "lastName": "Smith"
+    },
+    {
+      "id": 3,
+      "firstName": "Sara",
+      "lastName": "Wilson"
+    },
+    {
+      "firstName": "Bob",
+      "lastName": "Jones",
+      "id": 6
+    }
+  ]
+}
