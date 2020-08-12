@@ -57,8 +57,19 @@ export const addLog = (log) => async (dispatch) => {
 
     let data = {}
 
+    let newObjKey = 0;
+
+    await fire.database().ref('/logs/').once('value', (snapshot) => {
+      snapshot.forEach((childSnapshot) => {
+        console.log(childSnapshot.key)
+        if(newObjKey == childSnapshot.key){
+          newObjKey += 1;
+        }
+      })
+    })
+
     const res = await fire.database().ref('/logs/')
-    const newLog = res.push();
+    const newLog = res.child(newObjKey);
     newLog.set((log), (log) => {
       let newID = 1;
       res.once('value', (snapshot) => {
@@ -95,7 +106,7 @@ export const deleteLog = (id) => async (dispatch) => {
       snapshot.forEach((childSnapshot) => {
         if (id == childSnapshot.val()['id']){
           console.log("This object will be deleted: " + childSnapshot.val()['id']);
-          console.log(childSnapshot.ref())
+          resp.child(childSnapshot.val()['id']).remove()
         }
       })
     })
