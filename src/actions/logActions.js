@@ -1,4 +1,6 @@
+import fire from '../config/config';
 import { GET_LOGS, SET_LOADING, LOGS_ERROR, ADD_LOG, DELETE_LOG, SET_CURRENT, CLEAR_CURRENT, UPDATE_LOG, SEARCH_LOGS } from "./types";
+import { isCompositeComponent } from 'react-dom/test-utils';
 
 // export const getLogs = () => {
 //     return async (dispatch) => {
@@ -18,19 +20,31 @@ import { GET_LOGS, SET_LOADING, LOGS_ERROR, ADD_LOG, DELETE_LOG, SET_CURRENT, CL
 export const getLogs = () => async (dispatch) => {
   try {
     setLoading();
+    
+    const data = [];
 
-    const res = await fetch("/logs");
-    const data = await res.json();
-
+    const res = await fire.database().ref('/logs/').once('value', snapshot => {
+      snapshot.forEach(childSnapshot => {
+        console.log(childSnapshot.val()['id'])
+        data.push(childSnapshot.val());
+      })
+    })
+    
     dispatch({
       type: GET_LOGS,
       payload: data,
     });
   } catch (err) {
-    dispatch({
-      type: LOGS_ERROR,
-      payload: err.response.statusText,
-    });
+    console.log({err});
+    if(err.code != 'PERMISSION DENIED') {
+      dispatch({
+        type: LOGS_ERROR,
+        payload: err.response,
+      });
+    } else {
+      window.alert("Permission denied");
+    }
+
   }
 };
 
@@ -39,20 +53,31 @@ export const addLog = (log) => async (dispatch) => {
   try {
     setLoading();
 
-    const res = await fetch("/logs", {
-      method: "POST",
-      body: JSON.stringify(log),
-      headers: {
-        "Content-Type": "application/json",
-      },
+    console.log(log)
+
+    let data = {}
+
+    const res = await fire.database().ref('/logs/')
+    const newLog = res.push();
+    newLog.set((log), (log) => {
+      let newID = 1;
+      res.once('value', (snapshot) => {
+        snapshot.forEach(childSnapshot => {
+          if(newID == childSnapshot.val()['id']) {
+            newID += 1;
+          }
+        })
+        newLog.update({'id': JSON.stringify(newID)});
+      })
+      data = JSON.stringify(log);
     });
-    const data = await res.json();
 
     dispatch({
       type: ADD_LOG,
       payload: data,
     });
   } catch (err) {
+    console.log(err);
     dispatch({
       type: LOGS_ERROR,
       payload: err.response.statusText,
@@ -64,6 +89,16 @@ export const addLog = (log) => async (dispatch) => {
 export const deleteLog = (id) => async (dispatch) => {
   try {
     setLoading();
+
+    const resp = await fire.database().ref('/logs/');
+    const delLog = resp.once('value', (snapshot) => {
+      snapshot.forEach((childSnapshot) => {
+        if (id == childSnapshot.val()['id']){
+          console.log("This object will be deleted: " + childSnapshot.val()['id']);
+          console.log(childSnapshot.ref())
+        }
+      })
+    })
 
     const res = await fetch(`/logs/${id}`, {
       method: "DELETE",

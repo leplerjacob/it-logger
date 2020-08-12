@@ -1,3 +1,4 @@
+import fire from '../config/config';
 import {
   GET_TECHS,
   ADD_TECH,
@@ -13,10 +14,16 @@ export const getTechs = () => async dispatch => {
     try {
         setLoading();
 
-        const res = await fetch('/techs');
-        const data = await res.json();
+        const data = [];
 
-        console.log(data);
+        const res = await fire.database().ref('/techs/').once('value', snapshot => {
+          snapshot.forEach(childSnapshot => {
+            data.push(childSnapshot.val());
+            data.push({
+                id: childSnapshot.numChildren() - 1
+            })
+          })
+        })
 
         dispatch({
             type: GET_TECHS,
