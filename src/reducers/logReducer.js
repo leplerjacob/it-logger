@@ -67,7 +67,7 @@ export default (state = initialState, action) => {
     case LOGS_ERROR:
       return {
         ...state,
-        err: action.payload,
+        error: action.payload,
       };
     default:
       return state;

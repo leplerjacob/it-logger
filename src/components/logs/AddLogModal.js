@@ -10,12 +10,17 @@ const AddLogModal = ({ addLog }) => {
   const [message, setMessage] = useState("");
   const [attention, setAttention] = useState(false);
   const [tech, setTech] = useState("");
+  
+  console.log({addLog});
 
   const onSubmit = () => {
     if(message === '' || tech === '') {
         M.toast({ html: 'Please enter a message and tech' });
     } else {
 
+        if(addLog) {
+          console.log('There was an error')
+        }
         const newLog = {
           message,
           attention,
