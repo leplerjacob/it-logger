@@ -6,35 +6,34 @@ import TechSelectOptions from '../techs/TechSelectOptions';
 import M from 'materialize-css/dist/js/materialize.min.js';
 
 
-const AddLogModal = ({ addLog }) => {
+const AddLogModal = ({ error, addLog }) => {
   const [message, setMessage] = useState("");
   const [attention, setAttention] = useState(false);
   const [tech, setTech] = useState("");
+
+  const onSubmit = (error) => {
+    if(!error) {
+      if(message === '' || tech === '') {
+          M.toast({ html: 'Please enter a message and tech' });
+      } else {
+          const newLog = {
+            message,
+            attention,
+            tech,
+            date: new Date().toISOString()
+          }
   
-  console.log({addLog});
-
-  const onSubmit = () => {
-    if(message === '' || tech === '') {
-        M.toast({ html: 'Please enter a message and tech' });
+          addLog(newLog);
+          M.toast({ html: `Log added by ${tech}` })
+  
+          // Clear Fields of modal
+          setMessage('');
+          setTech('');
+          setAttention('');
+      }
     } else {
-
-        if(addLog) {
-          console.log('There was an error')
-        }
-        const newLog = {
-          message,
-          attention,
-          tech,
-          date: new Date().toISOString()
-        }
-
-        addLog(newLog);
-        M.toast({ html: `Log added by ${tech}` })
-
-        // Clear Fields of modal
-        setMessage('');
-        setTech('');
-        setAttention('');
+      console.log("ERRRORRR")
+      M.toast({ html: `${error}` })
     }
   };
 
@@ -90,7 +89,7 @@ const AddLogModal = ({ addLog }) => {
       <div className="modal-footer">
         <a
           href="#!"
-          onClick={onSubmit}
+          onClick={() => onSubmit(error)}
           className="modal-close waves-effect waves-light blue btn"
         >
           Enter
@@ -102,6 +101,7 @@ const AddLogModal = ({ addLog }) => {
 
 AddLogModal.propTypes = {
   addLog: PropTypes.func.isRequired,
+  error: PropTypes.object
 }
 
 const modalStyle = {
@@ -109,4 +109,8 @@ const modalStyle = {
   height: "75%",
 };
 
-export default connect(null, { addLog })(AddLogModal);
+const mapStateToProps = (state) => ({
+  error: state.log.error,
+})
+
+export default connect(mapStateToProps, { addLog })(AddLogModal);

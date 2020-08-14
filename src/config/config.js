@@ -1,4 +1,6 @@
-const firebase = require('firebase');
+import firebase from 'firebase/app';
+import 'firebase/database';
+import 'firebase/storage';
 
 export const DB_CONFIG = {
   apiKey: "AIzaSyBbcDD0QmEJI7J6HxznK4jK-8Nncn9LTU0",

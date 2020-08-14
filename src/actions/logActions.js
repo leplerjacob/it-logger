@@ -10,21 +10,6 @@ import {
   UPDATE_LOG,
   SEARCH_LOGS,
 } from "./types";
-import { isCompositeComponent } from "react-dom/test-utils";
-
-// export const getLogs = () => {
-//     return async (dispatch) => {
-//         setLoading();
-
-//         const res = await fetch('/logs');
-//         const data = await res.json();
-
-//         dispatch({
-//             type: GET_LOGS,
-//             payload: data
-//         })
-//     }
-// }
 
 // Get Logs from Server
 export const getLogs = () => async (dispatch) => {
@@ -33,30 +18,32 @@ export const getLogs = () => async (dispatch) => {
 
     const data = [];
 
-    const res = await fire
+    const res = fire
       .database()
       .ref("/logs/")
-      .once("value", (snapshot) => {
+      .once("value")
+      .then((snapshot) => {
         snapshot.forEach((childSnapshot) => {
-          console.log(childSnapshot.val()["id"]);
           data.push(childSnapshot.val());
         });
+        dispatch({
+          type: GET_LOGS,
+          payload: data,
+        });
+      })
+      .catch((err) => {
+        console.log(err["code"]);
+        if (err["code"] === "PERMISSION DENIED") {
+          window.alert("Permission denied");
+          dispatch({
+            type: LOGS_ERROR,
+            payload: err.response,
+          });
+        } else {
+        }
       });
-
-    dispatch({
-      type: GET_LOGS,
-      payload: data,
-    });
   } catch (err) {
-    console.log({ err });
-    if (err.code != "PERMISSION DENIED") {
-      dispatch({
-        type: LOGS_ERROR,
-        payload: err.response,
-      });
-    } else {
-      window.alert("Permission denied");
-    }
+    console.log(err);
   }
 };
 
@@ -65,11 +52,10 @@ export const addLog = (log) => async (dispatch) => {
   try {
     setLoading();
 
-    console.log(log);
-
-    let data = {};
+    let data = log;
 
     let newObjKey = 0;
+    let newID = '';
 
     await fire
       .database()
@@ -85,7 +71,7 @@ export const addLog = (log) => async (dispatch) => {
 
     const res = fire.database().ref("/logs/");
     const newLog = res.child(newObjKey);
-    newLog.set(log, (log) => {
+    newLog.update(log, () => {
       let newID = 1;
       res.once("value", (snapshot) => {
         snapshot.forEach((childSnapshot) => {
@@ -93,24 +79,21 @@ export const addLog = (log) => async (dispatch) => {
             newID += 1;
           }
         });
-        newLog.update({ id: JSON.stringify(newID) }).then(() => {
-          dispatch({
-            type: ADD_LOG,
-            payload: data,
-          });
-        }).catch((err) => {
-          console.log(err)
-          dispatch({
-            type: LOGS_ERROR,
-            payload: err.message,
-          });
-        });
+        newLog.update({ id: JSON.stringify(newID) });
       });
-      data = JSON.stringify(log);
     });
+    data['id'] = newID;
 
+    dispatch({
+      type: ADD_LOG,
+      payload: data,
+    });
   } catch (err) {
     console.log(err);
+    dispatch({
+      type: LOGS_ERROR,
+      payload: err.message,
+    });
   }
 };
 
@@ -133,18 +116,22 @@ export const deleteLog = (id) => async (dispatch) => {
           );
           const result = window.confirm("Are you sure?");
           if (result) {
-            resp.child(childSnapshot.key).remove().then(() => {
-              dispatch({
-                type: DELETE_LOG,
-                payload: id,
+            resp
+              .child(childSnapshot.key)
+              .remove()
+              .then(() => {
+                dispatch({
+                  type: DELETE_LOG,
+                  payload: id,
+                });
+              })
+              .catch((err) => {
+                console.log({ err });
+                dispatch({
+                  type: LOGS_ERROR,
+                  payload: err.message,
+                });
               });
-            }).catch(err => {
-              console.log({err})
-              dispatch({
-                type: LOGS_ERROR,
-                payload: err.message,
-              });
-            });
           }
         } else {
           getLogs();
