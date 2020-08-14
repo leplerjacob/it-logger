@@ -11,6 +11,7 @@ import {
   SEARCH_LOGS,
 } from "./types";
 
+
 // Get Logs from Server
 export const getLogs = () => async (dispatch) => {
   try {
@@ -32,7 +33,6 @@ export const getLogs = () => async (dispatch) => {
         });
       })
       .catch((err) => {
-        console.log(err["code"]);
         if (err["code"] === "PERMISSION DENIED") {
           window.alert("Permission denied");
           dispatch({
@@ -43,7 +43,6 @@ export const getLogs = () => async (dispatch) => {
         }
       });
   } catch (err) {
-    console.log(err);
   }
 };
 
@@ -62,7 +61,6 @@ export const addLog = (log) => async (dispatch) => {
       .ref("/logs/")
       .once("value", (snapshot) => {
         snapshot.forEach((childSnapshot) => {
-          console.log(childSnapshot.key);
           if (newObjKey == childSnapshot.key) {
             newObjKey += 1;
           }
@@ -89,7 +87,6 @@ export const addLog = (log) => async (dispatch) => {
       payload: data,
     });
   } catch (err) {
-    console.log(err);
     dispatch({
       type: LOGS_ERROR,
       payload: err.message,
@@ -102,8 +99,6 @@ export const deleteLog = (id) => async (dispatch) => {
   try {
     setLoading();
 
-    console.log("This is the id clicked: " + id);
-
     // Change resp to res
     // @Desc    Delete log function
     const resp = fire.database().ref("/logs/");
@@ -111,9 +106,7 @@ export const deleteLog = (id) => async (dispatch) => {
       snapshot.forEach((childSnapshot) => {
         if (id == childSnapshot.val()["id"]) {
           const childID = childSnapshot.val()["id"];
-          console.log(
-            "This object will be deleted: " + childSnapshot.val()["id"]
-          );
+        
           const result = window.confirm("Are you sure?");
           if (result) {
             resp
@@ -126,7 +119,6 @@ export const deleteLog = (id) => async (dispatch) => {
                 });
               })
               .catch((err) => {
-                console.log({ err });
                 dispatch({
                   type: LOGS_ERROR,
                   payload: err.message,
@@ -153,7 +145,6 @@ export const updateLog = (log) => async (dispatch) => {
 
 
     const resp = fire.database().ref(`/logs/`);
-    console.log(resp.val())
 
     const data = ''
 
