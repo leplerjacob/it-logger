@@ -107,7 +107,7 @@ export const deleteLog = (id) => async (dispatch) => {
     // Change resp to res
     // @Desc    Delete log function
     const resp = fire.database().ref("/logs/");
-    const delLog = resp.once("value", (snapshot) => {
+    resp.once("value", (snapshot) => {
       snapshot.forEach((childSnapshot) => {
         if (id == childSnapshot.val()["id"]) {
           const childID = childSnapshot.val()["id"];
@@ -151,15 +151,11 @@ export const updateLog = (log) => async (dispatch) => {
   try {
     setLoading();
 
-    const res = await fetch(`/logs/${log.id}`, {
-      method: "PUT",
-      body: JSON.stringify(log),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
 
-    const data = await res.json();
+    const resp = fire.database().ref(`/logs/`);
+    console.log(resp.val())
+
+    const data = ''
 
     dispatch({
       type: UPDATE_LOG,
@@ -168,7 +164,7 @@ export const updateLog = (log) => async (dispatch) => {
   } catch (err) {
     dispatch({
       type: LOGS_ERROR,
-      payload: err.response.statusText,
+      payload: err.message,
     });
   }
 };
